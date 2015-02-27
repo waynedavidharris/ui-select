@@ -164,11 +164,11 @@ uis.controller('uiSelectCtrl',
               filteredItems = data.filter(function(i) {return selectedItems.indexOf(i) < 0;});
             } else {
               ctrl.selectedItemRegister = {};
-              angular.forEach(data, function (item, index) {
+              angular.forEach(data, function (item) {
                 angular.forEach(selectedItems, function (selectedItem) {
                   if (angular.equals(item, selectedItem)) {
                     ctrl.selectedItemRegister[item.$$hashKey] = true;
-                    console.log('## item=',item,'  ctrl.selectedItemRegister=',ctrl.selectedItemRegister);
+                    //console.log('## item=',item,'  ctrl.selectedItemRegister=',ctrl.selectedItemRegister);
                   }
                 });
               });
@@ -249,7 +249,7 @@ uis.controller('uiSelectCtrl',
       item = ctrl.items[itemIndex];
 
       if (ctrl.toggleSelectedItems) {
-        console.log('## isDisabled : item=',item);
+        //console.log('## isDisabled : item=',item);
         isDisabled = ctrl.selectedItemRegister[item.$$hashKey] === true;  //item._uiSelectChoiceDisabled === true;//
       }
 
@@ -323,7 +323,7 @@ uis.controller('uiSelectCtrl',
           } else {
             if (ctrl.selectedItemRegister[item.$$hashKey] === true) {
               //remove
-              console.log('XX REMOVE : ctrl.selected=',ctrl.selected,'   item=',item);
+              //console.log('XX REMOVE : ctrl.selected=',ctrl.selected,'   item=',item);
               //find index of item in selected list with hashKey and remove
               var index = -1;
               angular.forEach(ctrl.selected, function (selectedItem, i) {

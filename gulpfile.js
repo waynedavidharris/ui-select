@@ -26,11 +26,16 @@ var config = {
       ' */\n\n\n'
 };
 
-gulp.task('default', ['build','test']);
+//gulp.task('default', ['build','test']);
+gulp.task('default', ['build']);
 gulp.task('build', ['scripts', 'styles']);
-gulp.task('test', ['build', 'karma']);
+//gulp.task('test', ['build', 'karma']);
 
-gulp.task('watch', ['build','karma-watch'], function() {
+//gulp.task('watch', ['build','karma-watch'], function() {
+//  gulp.watch(['src/**/*.{js,html}'], ['build']);
+//});
+
+gulp.task('watch', ['build'], function() {
   gulp.watch(['src/**/*.{js,html}'], ['build']);
 });
 
@@ -71,10 +76,10 @@ gulp.task('scripts', ['clean'], function() {
     .pipe(header(config.banner, {
       timestamp: (new Date()).toISOString(), pkg: config.pkg
     }))
-    .pipe(gulp.dest('dist'))
-    .pipe(uglify({preserveComments: 'some'}))
-    .pipe(rename({ext:'.min.js'}))
     .pipe(gulp.dest('dist'));
+    //.pipe(uglify({preserveComments: 'some'}))
+    //.pipe(rename({ext:'.min.js'}))
+    //.pipe(gulp.dest('dist'));
 
 });
 
@@ -92,13 +97,13 @@ gulp.task('styles', ['clean'], function() {
 
 });
 
-gulp.task('karma', ['build'], function() {
-  karma.start({configFile : __dirname +'/karma.conf.js', singleRun: true});
-});
-
-gulp.task('karma-watch', ['build'], function() {
-  karma.start({configFile :  __dirname +'/karma.conf.js', singleRun: false});
-});
+//gulp.task('karma', ['build'], function() {
+//  karma.start({configFile : __dirname +'/karma.conf.js', singleRun: true});
+//});
+//
+//gulp.task('karma-watch', ['build'], function() {
+//  karma.start({configFile :  __dirname +'/karma.conf.js', singleRun: false});
+//});
 
 var handleError = function (err) {
   console.log(err.toString());
