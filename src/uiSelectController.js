@@ -35,6 +35,9 @@ uis.controller('uiSelectCtrl',
   ctrl.clickTriggeredSelect = false;
   ctrl.$filter = $filter;
 
+  ctrl.toggleSelectedItems = true; //wdh
+  ctrl.selectedItemRegister = []; //wdh
+
   ctrl.isEmpty = function() {
     return angular.isUndefined(ctrl.selected) || ctrl.selected === null || ctrl.selected === '';
   };
@@ -150,8 +153,29 @@ uis.controller('uiSelectCtrl',
           setItemsFn(data);
         }else{
           if ( data !== undefined ) {
-            var filteredItems = data.filter(function(i) {return selectedItems.indexOf(i) < 0;});
+            //****************************************************************
+            //wdh
+            //filteredItems = data.filter(function(i) {return selectedItems.indexOf(i) < 0;});
+            //setItemsFn(filteredItems);
+
+            var filteredItems;
+
+            if (!ctrl.toggleSelectedItems) {
+              filteredItems = data.filter(function(i) {return selectedItems.indexOf(i) < 0;});
+            } else {
+              ctrl.selectedItemRegister = {};
+              angular.forEach(data, function (item, index) {
+                angular.forEach(selectedItems, function (selectedItem) {
+                  if (angular.equals(item, selectedItem)) {
+                    ctrl.selectedItemRegister[item.$$hashKey] = true;
+                    console.log('## item=',item,'  ctrl.selectedItemRegister=',ctrl.selectedItemRegister);
+                  }
+                });
+              });
+              filteredItems = data;
+            }
             setItemsFn(filteredItems);
+            //*****************************************************************
           }
         }
         ctrl.sizeSearchInput();
@@ -212,11 +236,29 @@ uis.controller('uiSelectCtrl',
     var isDisabled = false;
     var item;
 
-    if (itemIndex >= 0 && !angular.isUndefined(ctrl.disableChoiceExpression)) {
+    //***************************************************
+    //wdh
+    //if (itemIndex >= 0 && !angular.isUndefined(ctrl.disableChoiceExpression)) {
+    //  item = ctrl.items[itemIndex];
+    //  isDisabled = !!(itemScope.$eval(ctrl.disableChoiceExpression)); // force the boolean value
+    //  item._uiSelectChoiceDisabled = isDisabled; // store this for later reference
+    //}
+
+    if (itemIndex >= 0) {
+
       item = ctrl.items[itemIndex];
-      isDisabled = !!(itemScope.$eval(ctrl.disableChoiceExpression)); // force the boolean value
-      item._uiSelectChoiceDisabled = isDisabled; // store this for later reference
+
+      if (ctrl.toggleSelectedItems) {
+        console.log('## isDisabled : item=',item);
+        isDisabled = ctrl.selectedItemRegister[item.$$hashKey] === true;  //item._uiSelectChoiceDisabled === true;//
+      }
+
+      if (!isDisabled && !angular.isUndefined(ctrl.disableChoiceExpression)) {
+        isDisabled = !!(itemScope.$eval(ctrl.disableChoiceExpression)); // force the boolean value
+        item._uiSelectChoiceDisabled = isDisabled; // store this for later reference
+      }
     }
+    //**************************************************
 
     return isDisabled;
   };
@@ -272,7 +314,29 @@ uis.controller('uiSelectCtrl',
         locals[ctrl.parserResult.itemName] = item;
 
         if(ctrl.multiple) {
-          ctrl.selected.push(item);
+          //*****************************************************
+          //wdh
+          //ctrl.selected.push(item);
+
+          if (!ctrl.toggleSelectedItems) {
+            ctrl.selected.push(item);
+          } else {
+            if (ctrl.selectedItemRegister[item.$$hashKey] === true) {
+              //remove
+              console.log('XX REMOVE : ctrl.selected=',ctrl.selected,'   item=',item);
+              //find index of item in selected list with hashKey and remove
+              var index = -1;
+              angular.forEach(ctrl.selected, function (selectedItem, i) {
+                if (selectedItem.$$hashKey === item.$$hashKey) {
+                  index = i;
+                }
+              });
+              ctrl.removeChoice(index);
+            } else {
+              ctrl.selected.push(item);
+            }
+          }
+          //*****************************************************
           ctrl.sizeSearchInput();
         } else {
           ctrl.selected = item;
