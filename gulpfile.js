@@ -12,7 +12,7 @@ var uglify = require('gulp-uglify');
 var minifyHtml = require('gulp-minify-html');
 var minifyCSS = require('gulp-minify-css');
 var templateCache = require('gulp-angular-templatecache');
-var gutil = require('gulp-util');
+//var gutil = require('gulp-util');
 var plumber = require('gulp-plumber');//To prevent pipe breaking caused by errors at 'watch'
 
 var config = {
@@ -28,7 +28,9 @@ var config = {
 
 //gulp.task('default', ['build','test']);
 gulp.task('default', ['build']);
+
 gulp.task('build', ['scripts', 'styles']);
+
 //gulp.task('test', ['build', 'karma']);
 
 //gulp.task('watch', ['build','karma-watch'], function() {

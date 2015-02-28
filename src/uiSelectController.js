@@ -228,6 +228,7 @@ uis.controller('uiSelectCtrl',
     return isActive;
   };
 
+
   ctrl.isDisabled = function(itemScope) {
 
     if (!ctrl.open) return;
@@ -236,32 +237,32 @@ uis.controller('uiSelectCtrl',
     var isDisabled = false;
     var item;
 
-    //***************************************************
-    //wdh
-    //if (itemIndex >= 0 && !angular.isUndefined(ctrl.disableChoiceExpression)) {
-    //  item = ctrl.items[itemIndex];
-    //  isDisabled = !!(itemScope.$eval(ctrl.disableChoiceExpression)); // force the boolean value
-    //  item._uiSelectChoiceDisabled = isDisabled; // store this for later reference
-    //}
-
-    if (itemIndex >= 0) {
-
+    if (itemIndex >= 0 && !angular.isUndefined(ctrl.disableChoiceExpression)) {
       item = ctrl.items[itemIndex];
-
-      if (ctrl.toggleSelectedItems) {
-        //console.log('## isDisabled : item=',item);
-        isDisabled = ctrl.selectedItemRegister[item.$$hashKey] === true;  //item._uiSelectChoiceDisabled === true;//
-      }
-
-      if (!isDisabled && !angular.isUndefined(ctrl.disableChoiceExpression)) {
-        isDisabled = !!(itemScope.$eval(ctrl.disableChoiceExpression)); // force the boolean value
-        item._uiSelectChoiceDisabled = isDisabled; // store this for later reference
-      }
+      isDisabled = !!(itemScope.$eval(ctrl.disableChoiceExpression)); // force the boolean value
+      item._uiSelectChoiceDisabled = isDisabled; // store this for later reference
     }
-    //**************************************************
-
     return isDisabled;
   };
+
+  //**************************************************************************
+  //wdh
+  ctrl.isSelected = function(itemScope) {
+
+    if (!ctrl.open || !ctrl.toggleSelectedItems) return;
+
+    var itemIndex = ctrl.items.indexOf(itemScope[ctrl.itemProperty]);
+    var isSelected = false;
+    var item;
+
+    if (itemIndex >= 0) {
+      item = ctrl.items[itemIndex];
+      //console.log('## isSelected : item=',item);
+      isSelected = ctrl.selectedItemRegister[item.$$hashKey] === true;
+    }
+    return isSelected;
+  };
+  //**************************************************************************
 
 
   // When the user selects an item with ENTER or clicks the dropdown
@@ -410,6 +411,13 @@ uis.controller('uiSelectCtrl',
 
     var locals = {};
     locals[ctrl.parserResult.itemName] = removedChoice;
+
+    //******************************************************
+    //wdh
+    if (ctrl.toggleSelectedItems) {
+      delete ctrl.selectedItemRegister[removedChoice.$$hashKey];
+    }
+    //******************************************************
 
     ctrl.selected.splice(index, 1);
     ctrl.activeMatchIndex = -1;
