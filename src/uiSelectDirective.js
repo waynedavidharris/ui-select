@@ -44,6 +44,15 @@ uis.directive('uiSelect',
       $select.onSelectCallback = $parse(attrs.onSelect);
       $select.onRemoveCallback = $parse(attrs.onRemove);
 
+      //*****************************************
+      //wdh
+      $select.toggleSelectedItems = angular.isDefined(attrs.toggleSelectedItems) && (
+        attrs.toggleSelectedItems === '' ||
+        attrs.toggleSelectedItems.toLowerCase() === 'true'
+      );
+      //*****************************************
+
+
       //From view --> model
       ngModel.$parsers.unshift(function (inputValue) {
         var locals = {},

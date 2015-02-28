@@ -1,7 +1,7 @@
 /*!
  * ui-select
  * http://github.com/angular-ui/ui-select
- * Version: 0.10.0 - 2015-02-28T04:19:49.426Z
+ * Version: 0.10.0 - 2015-02-28T08:16:58.135Z
  * License: MIT
  */
 
@@ -300,9 +300,11 @@ uis.controller('uiSelectCtrl',
   ctrl.closeOnSelect = true; // Initialized inside uiSelect directive link function
   ctrl.clickTriggeredSelect = false;
   ctrl.$filter = $filter;
-
-  ctrl.toggleSelectedItems = true; //wdh
-  ctrl.selectedItemRegister = []; //wdh
+  //**********************************
+  //wdh
+  ctrl.toggleSelectedItems = false;
+  ctrl.selectedItemRegister = [];
+  //**********************************
 
   ctrl.isEmpty = function() {
     return angular.isUndefined(ctrl.selected) || ctrl.selected === null || ctrl.selected === '';
@@ -399,6 +401,7 @@ uis.controller('uiSelectCtrl',
         } else {
           if (ctrl.multiple){
             //Remove already selected items (ex: while searching)
+            //console.log("ui-select: WOAHH gotta deal with this...");
             var filteredItems = items.filter(function(i) {return ctrl.selected.indexOf(i) < 0;});
             setItemsFn(filteredItems);
           }else{
@@ -429,11 +432,11 @@ uis.controller('uiSelectCtrl',
             if (!ctrl.toggleSelectedItems) {
               filteredItems = data.filter(function(i) {return selectedItems.indexOf(i) < 0;});
             } else {
-              ctrl.selectedItemRegister = {};
-              angular.forEach(data, function (item) {
-                angular.forEach(selectedItems, function (selectedItem) {
-                  if (angular.equals(item, selectedItem)) {
-                    ctrl.selectedItemRegister[item.$$hashKey] = true;
+              ctrl.selectedItemRegister = [];
+              angular.forEach(data, function (item, index) {
+                angular.forEach(selectedItems, function (selItem) {
+                  if (angular.equals(item, selItem)) {
+                    ctrl.selectedItemRegister[index] = true;
                     //console.log('## item=',item,'  ctrl.selectedItemRegister=',ctrl.selectedItemRegister);
                   }
                 });
@@ -449,6 +452,7 @@ uis.controller('uiSelectCtrl',
     }
 
   };
+
 
   var _refreshDelayPromise;
 
@@ -519,12 +523,10 @@ uis.controller('uiSelectCtrl',
 
     var itemIndex = ctrl.items.indexOf(itemScope[ctrl.itemProperty]);
     var isSelected = false;
-    var item;
 
     if (itemIndex >= 0) {
-      item = ctrl.items[itemIndex];
       //console.log('## isSelected : item=',item);
-      isSelected = ctrl.selectedItemRegister[item.$$hashKey] === true;
+      isSelected = ctrl.selectedItemRegister[itemIndex] === true;
     }
     return isSelected;
   };
@@ -588,17 +590,14 @@ uis.controller('uiSelectCtrl',
           if (!ctrl.toggleSelectedItems) {
             ctrl.selected.push(item);
           } else {
-            if (ctrl.selectedItemRegister[item.$$hashKey] === true) {
+            var itemIndex = ctrl.findIndex(ctrl.items, item);
+
+            if (ctrl.selectedItemRegister[itemIndex] === true) {
               //remove
               //console.log('XX REMOVE : ctrl.selected=',ctrl.selected,'   item=',item);
-              //find index of item in selected list with hashKey and remove
-              var index = -1;
-              angular.forEach(ctrl.selected, function (selectedItem, i) {
-                if (selectedItem.$$hashKey === item.$$hashKey) {
-                  index = i;
-                }
-              });
-              ctrl.removeChoice(index);
+              //find index of item in selected list and remove
+              var selIndex = ctrl.findIndex(ctrl.selected, item);
+              ctrl.removeChoice(selIndex);
             } else {
               ctrl.selected.push(item);
             }
@@ -625,6 +624,21 @@ uis.controller('uiSelectCtrl',
       }
     }
   };
+
+
+
+  //***************************************
+  //wdh
+  ctrl.findIndex = function(list, targetItem) {
+    var index = -1;
+    angular.forEach(list, function (listItem, i) {
+      if (angular.equals(listItem, targetItem)) {
+        index = i;
+      }
+    });
+    return index;
+  };
+  //**************************************
 
   // Closes the dropdown
   ctrl.close = function(skipFocusser) {
@@ -672,8 +686,9 @@ uis.controller('uiSelectCtrl',
   ctrl.removeChoice = function(index){
     var removedChoice = ctrl.selected[index];
 
-    // if the choice is locked, can't remove it
-    if(removedChoice._uiSelectChoiceLocked) return;
+    // if the choice undefined or locked, can't remove it
+    //wdh
+    if (angular.isUndefined(removedChoice) || removedChoice._uiSelectChoiceLocked) return;
 
     var locals = {};
     locals[ctrl.parserResult.itemName] = removedChoice;
@@ -681,7 +696,8 @@ uis.controller('uiSelectCtrl',
     //******************************************************
     //wdh
     if (ctrl.toggleSelectedItems) {
-      delete ctrl.selectedItemRegister[removedChoice.$$hashKey];
+      var itemIndex = ctrl.findIndex(ctrl.items, removedChoice);
+      delete ctrl.selectedItemRegister[itemIndex];
     }
     //******************************************************
 
@@ -1129,6 +1145,15 @@ uis.directive('uiSelect',
 
       $select.onSelectCallback = $parse(attrs.onSelect);
       $select.onRemoveCallback = $parse(attrs.onRemove);
+
+      //*****************************************
+      //wdh
+      $select.toggleSelectedItems = angular.isDefined(attrs.toggleSelectedItems) && (
+        attrs.toggleSelectedItems === '' ||
+        attrs.toggleSelectedItems.toLowerCase() === 'true'
+      );
+      //*****************************************
+
 
       //From view --> model
       ngModel.$parsers.unshift(function (inputValue) {
